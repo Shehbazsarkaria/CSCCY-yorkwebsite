@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyber &amp; Cloud Computing Club — York University</title>
+<meta name="description" content="The Computer Security & Cloud Computing Club at York University. CTFs, cloud labs, workshops, and a community of builders and breakers.">
+<meta name="theme-color" content="#04070f">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232596be'/%3E%3Ctext x='50' y='70' font-size='54' text-anchor='middle' font-family='monospace' font-weight='bold' fill='%23050a14'%3E%3E_%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+
+<script>document.documentElement.classList.add('js');</script>
+
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --c1:#2596be;
+  --c2:#6e45b0;
+  --c3:#8dc8f7;
+  --bg:#04070f;
+  --text:#e8f2ff;
+  --muted:#8ea3c0;
+  --line:rgba(141,200,247,.14);
+  --mono:'JetBrains Mono', ui-monospace, monospace;
+  --sans:'Space Grotesk', system-ui, -apple-system, sans-serif;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body{
+  font-family:var(--sans);
+  color:var(--text);
+  background:
+    radial-gradient(1200px 620px at 12% -10%, rgba(37,150,190,.20), transparent 62%),
+    radial-gradient(950px 540px at 88% 6%, rgba(110,69,176,.22), transparent 62%),
+    radial-gradient(900px 620px at 50% 112%, rgba(37,150,190,.13), transparent 65%),
+    var(--bg);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============ BACKGROUND LAYERS ============ */
+#bg{
+  position:fixed; inset:0;
+  width:100%; height:100%;
+  z-index:0;
+  pointer-events:none;
+}
+
+.overlay-grid{
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(141,200,247,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(141,200,247,.055) 1px, transparent 1px);
+  background-size:62px 62px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 28%, #000 15%, transparent 78%);
+  mask-image:radial-gradient(ellipse 90% 70% at 50% 28%, #000 15%, transparent 78%);
+}
+
+.overlay-scan{
+  position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.5;
+  background:repeating-linear-gradient(to bottom, rgba(255,255,255,.022) 0 1px, transparent 1px 3px);
+  overflow:hidden;
+}
+.overlay-scan::after{
+  content:''; position:absolute; left:0; right:0; height:200px; top:-220px;
+  background:linear-gradient(to bottom, transparent, rgba(141,200,247,.07), transparent);
+  animation:scan 9s linear infinite;
+}
+@keyframes scan{ to{ top:110%; } }
+
+/* ============ HEADER ============ */
+.site-header{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:20px;
+  padding:13px clamp(18px,4vw,48px);
+  background:rgba(4,7,15,.62);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+}
+
+.brand{
+  display:flex; align-items:center; gap:12px;
+  text-decoration:none; color:var(--text);
+}
+.brand-mark{
+  width:38px; height:38px; flex:0 0 38px;
+  border-radius:11px;
+  display:grid; place-items:center;
+  background:linear-gradient(135deg,var(--c1),var(--c2));
+  font-family:var(--mono); font-weight:800; font-size:14px; color:#03060d;
+  box-shadow:0 0 24px rgba(37,150,190,.5);
+}
+.brand-text{display:flex; flex-direction:column; line-height:1.15}
+.brand-text strong{font-size:.92rem; letter-spacing:.01em}
+.brand-text span{
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.2em;
+  color:var(--muted); text-transform:uppercase; margin-top:3px;
+}
+
+.nav{display:flex; align-items:center; gap:6px}
+.nav a{
+  font-family:var(--mono); font-size:.76rem; letter-spacing:.08em;
+  text-transform:uppercase; text-decoration:none;
+  color:var(--muted); padding:9px 13px; border-radius:8px;
+  transition:color .25s, background .25s;
+}
+.nav a:hover{color:var(--c3); background:rgba(141,200,247,.07)}
+
+.nav .nav-cta{
+  color:var(--c3);
+  border:1px solid rgba(141,200,247,.32);
+  background:rgba(141,200,247,.06);
+  margin-left:6px;
+}
+.nav .nav-cta:hover{
+  color:#03060d; background:var(--c3); border-color:var(--c3);
+  box-shadow:0 0 22px rgba(141,200,247,.45);
+}
+
+/* ============ BUTTONS ============ */
+.btn{
+  position:relative; overflow:hidden;
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  padding:14px 26px;
+  border-radius:999px;
+  font-family:var(--mono); font-size:.84rem; font-weight:600; letter-spacing:.03em;
+  text-decoration:none; white-space:nowrap;
+  border:1px solid transparent;
+  transition:transform .22s cubic-bezier(.2,.8,.3,1), box-shadow .3s, background .3s, color .3s, border-color .3s;
+}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.btn-primary{
+  background:linear-gradient(120deg,var(--c1),var(--c2));
+  color:#03060d;
+  box-shadow:0 0 0 1px rgba(141,200,247,.25), 0 12px 34px -14px rgba(37,150,190,.95);
+}
+.btn-primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 0 0 1px rgba(141,200,247,.55), 0 18px 44px -14px rgba(110,69,176,1);
+}
+.btn-primary::after{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.5) 50%,transparent 75%);
+  transform:translateX(-130%);
+}
+.btn-primary:hover::after{animation:shine .85s ease}
+@keyframes shine{ to{ transform:translateX(130%); } }
+
+.btn-ghost{
+  color:var(--c3);
+  border-color:rgba(141,200,247,.32);
+  background:rgba(141,200,247,.05);
+}
+.btn-ghost:hover{
+  transform:translateY(-2px);
+  background:rgba(141,200,247,.13);
+  border-color:var(--c3);
+  box-shadow:0 12px 34px -18px rgba(141,200,247,.9);
+}
+
+/* ============ HERO ============ */
+.hero{
+  position:relative; z-index:3;
+  max-width:1200px; margin:0 auto;
+  min-height:calc(100vh - 66px);
+  min-height:calc(100svh - 66px);
+  display:flex; flex-direction:column; justify-content:center;
+  padding:clamp(56px,9vh,110px) clamp(18px,4vw,48px) clamp(70px,10vh,120px);
+}
+
+.badge{
+  display:inline-flex; align-items:center; gap:9px;
+  width:fit-content;
+  padding:7px 15px;
+  border-radius:999px;
+  border:1px solid rgba(141,200,247,.28);
+  background:rgba(141,200,247,.06);
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--c3);
+}
+.dot{
+  width:7px; height:7px; border-radius:50%;
+  background:#3ddc97; box-shadow:0 0 10px #3ddc97;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{ 50%{ opacity:.3; transform:scale(.75); } }
+
+.hero h1{
+  margin:24px 0 20px;
+  font-size:clamp(2.7rem, 9.2vw, 6.6rem);
+  line-height:.94;
+  font-weight:700;
+  letter-spacing:-.035em;
+  background:linear-gradient(100deg,#ffffff 0%, var(--c3) 32%, var(--c1) 58%, var(--c2) 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text; background-clip:text;
+  color:transparent;
+  animation:hueShift 11s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 34px rgba(37,150,190,.22));
+}
+@keyframes hueShift{
+  0%{ background-position:0% 50%; }
+  100%{ background-position:100% 50%; }
+}
+
+/* glitch layers */
+.glitch{position:relative; display:inline-block}
+.glitch::before,
+.glitch::after{
+  content:attr(data-text);
+  position:absolute; inset:0;
+  background:inherit;
+  -webkit-background-clip:text; background-clip:text;
+  color:transparent;
+  pointer-events:none;
+}
+.glitch::before{ animation:glitchA 4.2s infinite steps(1); }
+.glitch::after{ animation:glitchB 3.1s infinite steps(1); }
+@keyframes glitchA{
+  0%,90%,100%{ clip-path:inset(100% 0 0 0); transform:translate(0,0); }
+  91%{ clip-path:inset(8% 0 62% 0); transform:translate(-5px,-2px); }
+  94%{ clip-path:inset(46% 0 26% 0); transform:translate(5px,2px); }
+  97%{ clip-path:inset(72% 0 4% 0);  transform:translate(-3px,1px); }
+}
+@keyframes glitchB{
+  0%,88%,100%{ clip-path:inset(100% 0 0 0); transform:translate(0,0); }
+  89%{ clip-path:inset(24% 0 48% 0); transform:translate(4px,2px); }
+  93%{ clip-path:inset(62% 0 12% 0); transform:translate(-4px,-2px); }
+}
+
+.lead{
+  max-width:600px;
+  color:var(--muted);
+  font-size:clamp(1rem,1.55vw,1.13rem);
+  line-height:1.72;
+}
+
+.hero-actions{
+  display:flex; flex-wrap:wrap; gap:14px;
+  margin-top:36px;
+}
+
+/* ============ TERMINAL ============ */
+.terminal{
+  margin-top:42px;
+  width:min(560px,100%);
+  border-radius:14px;
+  border:1px solid rgba(141,200,247,.18);
+  background:rgba(6,10,20,.72);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  overflow:hidden;
+  font-family:var(--mono);
+  font-size:.79rem;
+  box-shadow:0 28px 70px -36px rgba(37,150,190,.9);
+}
+.terminal-bar{
+  display:flex; align-items:center; gap:7px;
+  padding:11px 14px;
+  border-bottom:1px solid rgba(141,200,247,.12);
+  background:rgba(141,200,247,.045);
+}
+.terminal-bar i{ width:10px; height:10px; border-radius:50%; display:block; }
+.terminal-bar span{
+  margin-left:8px; font-size:.68rem; letter-spacing:.08em; color:var(--muted);
+}
+.terminal-body{ padding:16px 18px; line-height:2; color:var(--c3); }
+.prompt{ color:var(--c1); }
+.out{ color:var(--muted); }
+.out b{ color:#c7a6ff; font-weight:600; }
+.cursor{
+  display:inline-block; width:8px; height:14px; margin-left:2px;
+  background:var(--c3); vertical-align:-2px;
+  animation:blink 1.05s steps(1) infinite;
+}
+@keyframes blink{ 50%{ opacity:0; } }
+
+/* ============ SECTIONS ============ */
+section{ position:relative; z-index:3; }
+.wrap{
+  max-width:1200px; margin:0 auto;
+  padding:clamp(64px,10vh,116px) clamp(18px,4vw,48px);
+}
+
+.section-label{
+  display:flex; align-items:center; gap:14px;
+  font-family:var(--mono); font-size:.7rem; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--c1);
+}
+.section-label::after{
+  content:''; height:1px; flex:1; max-width:220px;
+  background:linear-gradient(90deg, rgba(37,150,190,.7), transparent);
+}
+
+h2{
+  margin:18px 0 14px;
+  font-size:clamp(1.9rem,4.2vw,3rem);
+  letter-spacing:-.025em;
+  line-height:1.08;
+  font-weight:700;
+}
+.section-sub{
+  max-width:640px; color:var(--muted); line-height:1.75;
+  font-size:clamp(.96rem,1.4vw,1.05rem);
+}
+
+/* ============ CARDS ============ */
+.grid{
+  display:grid; gap:20px;
+  grid-template-columns:repeat(auto-fit,minmax(248px,1fr));
+  margin-top:48px;
+}
+.card{
+  position:relative; overflow:hidden;
+  padding:28px 25px 30px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:linear-gradient(160deg, rgba(141,200,247,.065), rgba(110,69,176,.045));
+  transition:transform .38s cubic-bezier(.2,.8,.3,1), border-color .38s, box-shadow .38s;
+}
+.card::before{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%), rgba(37,150,190,.22), transparent 62%);
+  opacity:0; transition:opacity .38s;
+}
+.card:hover::before{ opacity:1; }
+.card:hover{
+  transform:translateY(-6px);
+  border-color:rgba(141,200,247,.42);
+  box-shadow:0 26px 55px -30px rgba(37,150,190,.95);
+}
+.card::after{
+  content:''; position:absolute; inset:9px; border-radius:10px; pointer-events:none;
+  background:
+    linear-gradient(var(--c3),var(--c3)) 0 0 / 14px 1px no-repeat,
+    linear-gradient(var(--c3),var(--c3)) 0 0 / 1px 14px no-repeat,
+    linear-gradient(var(--c3),var(--c3)) 100% 100% / 14px 1px no-repeat,
+    linear-gradient(var(--c3),var(--c3)) 100% 100% / 1px 14px no-repeat;
+  opacity:0; transition:opacity .38s;
+}
+.card:hover::after{ opacity:.7; }
+
+.card-icon{
+  width:46px; height:46px; margin-bottom:18px;
+  border-radius:12px;
+  display:grid; place-items:center;
+  border:1px solid rgba(141,200,247,.26);
+  background:linear-gradient(135deg, rgba(37,150,190,.22), rgba(110,69,176,.22));
+}
+.card-icon svg{
+  width:22px; height:22px;
+  stroke:var(--c3); fill:none;
+  stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+}
+.card h3{ font-size:1.1rem; margin-bottom:9px; letter-spacing:-.01em; font-weight:600; }
+.card p{ color:var(--muted); font-size:.93rem; line-height:1.68; }
+
+/* ============ CTA ============ */
+.cta-frame{
+  position:relative; overflow:hidden;
+  border-radius:26px; padding:1.5px;
+  background:rgba(141,200,247,.14);
+}
+.cta-frame::before{
+  content:''; position:absolute; top:50%; left:50%;
+  width:190%; aspect-ratio:1;
+  translate:-50% -50%;
+  background:conic-gradient(from 0deg,
+    transparent 0 55%,
+    rgba(37,150,190,.95) 68%,
+    rgba(141,200,247,1) 78%,
+    rgba(110,69,176,.95) 88%,
+    transparent 100%);
+  animation:spin 5.5s linear infinite;
+}
+@keyframes spin{ to{ rotate:360deg; } }
+
+.cta-panel{
+  position:relative; z-index:1;
+  border-radius:24.5px;
+  padding:clamp(38px,6vw,68px) clamp(24px,5vw,52px);
+  text-align:center;
+  background:
+    radial-gradient(620px circle at 50% 0%, rgba(110,69,176,.32), transparent 66%),
+    linear-gradient(160deg, rgba(37,150,190,.10), #070b15 55%);
+}
+.cta-panel h2{ margin-top:0; }
+.cta-panel p{
+  max-width:520px; margin:0 auto;
+  color:var(--muted); line-height:1.75;
+}
+.cta-panel .btn{ margin-top:32px; }
+.cta-meta{
+  margin-top:20px;
+  font-family:var(--mono); font-size:.7rem;
+  letter-spacing:.14em; text-transform:uppercase;
+  color:rgba(142,163,192,.75);
+}
+
+/* ============ FOOTER ============ */
+footer{
+  position:relative; z-index:3;
+  border-top:1px solid var(--line);
+  padding:34px clamp(18px,4vw,48px);
+}
+.footer-inner{
+  max-width:1200px; margin:0 auto;
+  display:flex; flex-wrap:wrap; gap:18px;
+  align-items:center; justify-content:space-between;
+}
+.footer-inner p{
+  font-family:var(--mono); font-size:.72rem;
+  letter-spacing:.06em; color:rgba(142,163,192,.8);
+}
+.footer-links{ display:flex; gap:20px; }
+.footer-links a{
+  font-family:var(--mono); font-size:.72rem; letter-spacing:.1em;
+  text-transform:uppercase; text-decoration:none;
+  color:var(--muted); transition:color .25s, text-shadow .25s;
+}
+.footer-links a:hover{
+  color:var(--c3);
+  text-shadow:0 0 14px rgba(141,200,247,.8);
+}
+
+/* ============ REVEAL ============ */
+.js .reveal{
+  opacity:0;
+  transform:translateY(26px);
+  transition:
+    opacity .75s cubic-bezier(.2,.8,.3,1),
+    transform .75s cubic-bezier(.2,.8,.3,1);
+  transition-delay:var(--d,0s);
+}
+.js .reveal.in{ opacity:1; transform:none; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:760px){
+  .nav a:not(.nav-cta){ display:none; }
+  .brand-text span{ display:none; }
+  .hero{ min-height:auto; padding-top:clamp(48px,12vh,90px); }
+  .terminal{ font-size:.72rem; }
+}
+@media (max-width:420px){
+  .hero-actions .btn{ width:100%; }
+}
+
+/* ============ REDUCED MOTION ============ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
+  html{ scroll-behavior:auto; }
+  .overlay-scan::after{ display:none; }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="overlay-grid" aria-hidden="true"></div>
+<div class="overlay-scan" aria-hidden="true"></div>
+
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <a class="brand" href="#top" aria-label="Cyber and Cloud Computing Club home">
+    <span class="brand-mark">&gt;_</span>
+    <span class="brand-text">
+      <strong>Cyber &amp; Cloud</strong>
+      <span>York University</span>
+    </span>
+  </a>
+
+  <nav class="nav" aria-label="Main navigation">
+    <a href="#about">About</a>
+    <a href="#activities">What We Do</a>
+    <a href="#join">Join</a>
+    <a class="nav-cta" href="https://linktr.ee/cybercloudyork?utm_source=linktree_profile_share&amp;ltsid=3d0f25ca-746c-4f72-bba4-c7b04ef9f19f" target="_blank" rel="noopener">Linktree ↗</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <span class="badge">
+      <span class="dot" aria-hidden="true"></span>
+      Club recruitment open
+    </span>
+
+    <h1>
+      <span class="glitch" data-text="Cyber &amp; Cloud">Cyber &amp; Cloud</span>
+    </h1>
+
+    <p class="lead">
+      The Computer Security &amp; Cloud Computing Club at York University.
+      We break things, build things, and ship them to the cloud — together.
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary"
+         href="https://linktr.ee/cybercloudyork?utm_source=linktree_profile_share&amp;ltsid=3d0f25ca-746c-4f72-bba4-c7b04ef9f19f"
+         target="_blank" rel="noopener">
+        Join the club
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="#activities">
+        Explore
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="m5 12 7 7 7-7"/></svg>
+      </a>
+    </div>
+
+    <div class="terminal" role="img" aria-label="Terminal showing club information">
+      <div class="terminal-bar">
+        <i style="background:#ff5f57"></i>
+        <i style="background:#febc2e"></i>
+        <i style="background:#28c840"></i>
+        <span>visitor@york:~$</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="prompt">$</span> whoami</div>
+        <div class="out">&gt; cyber &amp; cloud computing club</div>
+        <div><span class="prompt">$</span> locate</div>
+        <div class="out">&gt; <b>york university</b> · toronto, on</div>
+        <div><span class="prompt">$</span> ./status.sh</div>
+        <div class="out">&gt; <span id="typed"></span><span class="cursor" aria-hidden="true"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section id="about">
+    <div class="wrap">
+      <div class="reveal">
+        <div class="section-label">01 // About</div>
+        <h2>Where security meets the cloud.</h2>
+        <p class="section-sub">
+          We're a student-run community at York University for anyone curious about
+          offensive security, defensive engineering, cloud infrastructure, and everything
+          in between. No prior experience required — just bring the curiosity.
+        </p>
+      </div>
+
+      <div class="grid">
+        <article class="card reveal" style="--d:.05s">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2.5 20 6v6c0 4.8-3.4 8.4-8 9.5-4.6-1.1-8-4.7-8-9.5V6l8-3.5Z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <h3>Security First</h3>
+          <p>Hands-on labs, CTF practice, and deep dives into real-world vulnerabilities and defence.</p>
+        </article>
+
+        <article class="card reveal" style="--d:.12s">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M17.5 19a4.5 4.5 0 0 0 .5-8.97A6 6 0 0 0 6.2 9.3 4.5 4.5 0 0 0 6.5 19h11Z"/></svg>
+          </div>
+          <h3>Cloud Native</h3>
+          <p>Containers, CI/CD, IAM, and deployment pipelines. Learn the stack that runs the internet.</p>
+        </article>
+
+        <article class="card reveal" style="--d:.19s">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3"/><path d="M13 15h4"/></svg>
+          </div>
+          <h3>Workshops &amp; Talks</h3>
+          <p>Beginner-friendly workshops, alumni panels, and industry speaker nights throughout the term.</p>
+        </article>
+
+        <article class="card reveal" style="--d:.26s">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"/><circle cx="9.5" cy="7" r="3.5"/><path d="M21 20v-1.5a4 4 0 0 0-3-3.87"/><path d="M15.5 3.6a4 4 0 0 1 0 7.2"/></svg>
+          </div>
+          <h3>Community</h3>
+          <p>A network of students who collaborate on projects, prep for interviews, and help each other grow.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ACTIVITIES ================= -->
+  <section id="activities">
+    <div class="wrap">
+      <div class="reveal">
+        <div class="section-label">02 // What We Do</div>
+        <h2>Build. Break. Deploy. Repeat.</h2>
+        <p class="section-sub">
+          From capture-the-flag weekends to cloud certification study groups —
+          here's a taste of what the club gets up to.
+        </p>
+      </div>
+
+      <div class="grid">
+        <article class="card reveal" style="--d:.05s">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/><path d="M9 20V9"/></svg>
+          </div>
+          <h3>CTF Team</h3>
+          <p>Compete in student CTFs or just hang out and solve challenges with the team.</p>
+        </article>
+
+        <article class="card reveal" style="--d:.12s">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8.5 12 3l7 5.5"/><path d="M5 15.5 12 21l7-5.5"/></svg>
+          </div>
+          <h3>Cloud Labs</h3>
+          <p>Spin up real infrastructure — VMs, containers, serverless — in guided lab sessions.</p>
+        </article>
+
+        <article class="card reveal" style="--d:.19s">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Z"/><path d="M12 22V12"/><path d="m3 7 9 5 9-5"/></svg>
+          </div>
+          <h3>Project Teams</h3>
+          <p>Collaborate on open-source tools, home labs, and club infrastructure projects.</p>
+        </article>
+
+        <article class="card reveal" style="--d:.26s">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h11a1 1 0 0 1 1 1v13"/><path d="M4 19a2 2 0 0 0 2 2h12"/><path d="M8 7h6"/></svg>
+          </div>
+          <h3>Study Groups</h3>
+          <p>Cert prep and course support for security, networking, and cloud fundamentals.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA ================= -->
+  <section id="join">
+    <div class="wrap" style="padding-top:clamp(20px,4vh,50px)">
+      <div class="cta-frame reveal">
+        <div class="cta-panel">
+          <div class="section-label" style="justify-content:center">03 // Join</div>
+          <h2>Ready to jack in?</h2>
+          <p>
+            Everything lives in one place — Discord, Instagram, event sign-ups,
+            and membership. Hit the link and come say hi.
+          </p>
+
+          <a class="btn btn-primary"
+             href="https://linktr.ee/cybercloudyork?utm_source=linktree_profile_share&amp;ltsid=3d0f25ca-746c-4f72-bba4-c7b04ef9f19f"
+             target="_blank" rel="noopener">
+            linktr.ee/cybercloudyork
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
+
+          <div class="cta-meta">Open to all York University students</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="footer-inner">
+    <p>© <span id="year"></span> Cyber &amp; Cloud Computing Club · York University</p>
+    <div class="footer-links">
+      <a href="https://linktr.ee/cybercloudyork?utm_source=linktree_profile_share&amp;ltsid=3d0f25ca-746c-4f72-bba4-c7b04ef9f19f" target="_blank" rel="noopener">Linktree</a>
+      <a href="#top">Back to top</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Year ---------- */
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  /* ---------- Particle network background ---------- */
+  (function particles() {
+    var canvas = document.getElementById('bg');
+    var ctx = canvas.getContext('2d');
+    var COLORS = [[37, 150, 190], [110, 69, 176], [141, 200, 247]];
+    var w = 0, h = 0, dpr = 1;
+    var parts = [];
+    var pointer = { x: -9999, y: -9999, active: false };
+    var raf = null;
+
+    function rgba(c, a) {
+      return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
+    }
+
+    function build() {
+      var count = Math.min(110, Math.max(32, Math.floor((w * h) / 17000)));
+      parts = [];
+      for (var i = 0; i < count; i++) {
+        parts.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.34,
+          vy: (Math.random() - 0.5) * 0.34,
+          r: Math.random() * 1.6 + 0.6,
+          c: COLORS[(Math.random() * COLORS.length) | 0]
+        });
+      }
+    }
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.clientWidth || window.innerWidth;
+      h = canvas.clientHeight || window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+      if (reduceMotion) render(true);
+    }
+
+    function render(staticFrame) {
+      ctx.clearRect(0, 0, w, h);
+      var LINK = 132;
+      var i, j, p, q, dx, dy, d, a;
+
+      for (i = 0; i < parts.length; i++) {
+        p = parts[i];
+
+        if (!staticFrame) {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) { p.x = 0; p.vx *= -1; }
+          else if (p.x > w) { p.x = w; p.vx *= -1; }
+          if (p.y < 0) { p.y = 0; p.vy *= -1; }
+          else if (p.y > h) { p.y = h; p.vy *= -1; }
+        }
+
+        // links between particles
+        for (j = i + 1; j < parts.length; j++) {
+          q = parts[j];
+          dx = p.x - q.x;
+          dy = p.y - q.y;
+          d = Math.sqrt(dx * dx + dy * dy);
+          if (d < LINK) {
+            a = (1 - d / LINK) * 0.28;
+            ctx.strokeStyle = rgba(p.c, a);
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.stroke();
+          }
+        }
+
+        // links to pointer
+        if (pointer.active) {
+          dx = p.x - pointer.x;
+          dy = p.y - pointer.y;
+          d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 190) {
+            a = (1 - d / 190) * 0.4;
+            ctx.strokeStyle = rgba([141, 200, 247], a);
+            ctx.lineWidth = 0.9;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(pointer.x, pointer.y);
+            ctx.stroke();
+          }
+        }
+
+        ctx.fillStyle = rgba(p.c, 0.75);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function loop() {
+      render(false);
+      raf = requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('resize', function () {
+      cancelAnimationFrame(raf);
+      resize();
+      if (!reduceMotion) loop();
+    });
+
+    window.addEventListener('pointermove', function (e) {
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+      pointer.active = true;
+    }, { passive: true });
+
+    window.addEventListener('pointerleave', function () {
+      pointer.active = false;
+    });
+
+    resize();
+    if (reduceMotion) {
+      render(true);
+    } else {
+      loop();
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+          cancelAnimationFrame(raf);
+        } else {
+          cancelAnimationFrame(raf);
+          loop();
+        }
+      });
+    }
+  })();
+
+  /* ---------- Scroll reveal ---------- */
+  (function reveal() {
+    var items = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      items.forEach(function (el) { el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.14, rootMargin: '0px 0px -60px 0px' });
+
+    items.forEach(function (el) { io.observe(el); });
+  })();
+
+  /* ---------- Card pointer glow ---------- */
+  (function cardGlow() {
+    if (window.matchMedia('(hover: none)').matches) return;
+    document.querySelectorAll('.card').forEach(function (card) {
+      card.addEventListener('pointermove', function (e) {
+        var r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    });
+  })();
+
+  /* ---------- Terminal typing ---------- */
+  (function typing() {
+    var el = document.getElementById('typed');
+    if (!el) return;
+    var text = 'recruiting members... join us';
+
+    if (reduceMotion) {
+      el.textContent = text;
+      return;
+    }
+
+    var i = 0;
+    function type() {
+      if (i <= text.length) {
+        el.textContent = text.slice(0, i);
+        i++;
+        setTimeout(type, 45 + Math.random() * 55);
+      }
+    }
+    setTimeout(type, 900);
+  })();
+
+})();
+</script>
+
+</body>
+</html>
