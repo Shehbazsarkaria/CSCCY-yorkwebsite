@@ -1,112 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cyber Security and Cloud Computing at York</title>
-<meta name="description" content="CSCCY: a student community at York University for anyone curious about cyber security and cloud computing.">
-<meta name="theme-color" content="#040308">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23040308'/%3E%3Ctext x='50' y='70' font-size='54' text-anchor='middle' font-family='monospace' font-weight='bold' fill='%23a46cff'%3E%3E_%3C/text%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600&family=Major+Mono+Display&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+(function () {
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-<div class="ruler" aria-hidden="true"><span>0x0000</span></div>
+  var yr = document.getElementById('yr');
+  if (yr) yr.textContent = new Date().getFullYear();
 
-<header class="bar">
-  <a class="mark" href="./">CSCCY</a>
-  <nav aria-label="Main">
-    <a href="#about" data-scroll-to="about">About</a>
-    <a href="events/">Events</a>
-    <a href="#links" data-scroll-to="links">Find us</a>
-    <a href="https://yuconnect.yorku.ca/csccy/home/" class="reg">Register</a>
-  </nav>
-</header>
+  /* scroll ruler: ticks follow the page, label shows the offset in hex */
+  var label = document.querySelector('.ruler span');
+  function ruler() {
+    var s = Math.round(window.scrollY);
+    document.documentElement.style.setProperty('--y', s + 'px');
+    if (label) label.textContent = '0x' + s.toString(16).toUpperCase().padStart(4, '0');
+  }
+  addEventListener('scroll', ruler, { passive: true });
+  ruler();
 
-<main>
-  <div class="wrap hero">
-    <h1>Cyber Security and Cloud computing at York</h1>
-    <p class="tagline" id="tag">Where curiosity drives cyber and cloud</p>
-    <p class="desc">
-      A student community at York University for anyone curious about how systems get
-      broken, defended, and run in the cloud. No experience needed.
-    </p>
-    <div class="actions">
-      <a class="btn" href="https://yuconnect.yorku.ca/csccy/home/">Register for CSCCY</a>
-      <a class="plain" href="events/">See events</a>
-    </div>
-  </div>
+  /* tagline: starts as ROT13, each letter counts back down the alphabet to plain text */
+  var tag = document.getElementById('tag');
+  /* Clean navigation: scroll to sections without leaving #section in the URL.
+     Cross-page section links remember the target, then open the homepage cleanly. */
+  document.querySelectorAll('a[data-scroll-to]').forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var targetId = link.getAttribute('data-scroll-to');
+      var target = document.getElementById(targetId);
+      if (target) {
+        event.preventDefault();
+        target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+        if (history && history.replaceState) history.replaceState(null, '', location.pathname.replace(/index\.html$/, ''));
+        return;
+      }
+      event.preventDefault();
+      try { sessionStorage.setItem('csccy-scroll-target', targetId); } catch (e) {}
+      window.location.href = link.getAttribute('href');
+    });
+  });
 
-  <section class="block" id="about">
-    <div class="wrap about">
-      <h2>About us</h2>
-      <div>
-        <p>
-          We're a <strong>student-run club</strong> built around one idea: you learn security
-          and cloud faster when you're curious and have people to try things with.
-          Beginners and experienced members share the same sessions.
-        </p>
-        <dl>
-          <div><dt>Community &amp; Networking</dt><dd>Meet other York students who are into security and cloud — study groups, project partners, and a Discord that stays active between sessions.</dd></div>
-          <div><dt>Build Hands-on Technical skills</dt><dd>Labs, CTF practice, and cloud deployments you actually run yourself, from your first container to breaking and fixing real systems.</dd></div>
-          <div><dt>Industry exposure &amp; Mentorship</dt><dd>Speaker nights, industry and alumni guests, résumé and interview prep, plus guidance from upper-year members who've been through it.</dd></div>
-        </dl>
-      </div>
-    </div>
-  </section>
+  var pendingTarget = null;
+  try {
+    pendingTarget = sessionStorage.getItem('csccy-scroll-target');
+    sessionStorage.removeItem('csccy-scroll-target');
+  } catch (e) {}
+  if (pendingTarget) {
+    requestAnimationFrame(function () {
+      var target = document.getElementById(pendingTarget);
+      if (target) target.scrollIntoView({ behavior: 'auto', block: 'start' });
+    });
+  }
 
-  <section class="block" id="links">
-    <div class="wrap">
-      <h2>Find us</h2>
-      <ul class="chan">
-        <li>
-          <a href="https://www.instagram.com/cybercloudyorku" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
-            <span><b>Instagram</b><small>@cybercloudyorku</small></span>
-            <code>instagram.com</code>
-          </a>
-        </li>
-        <li>
-          <a href="https://discord.com/invite/BZHRRaSWjN" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5.6 6.3c1.9-1.2 3.8-1.6 3.8-1.6l.5 1.1a12 12 0 0 1 4.2 0l.5-1.1s1.9.4 3.8 1.6c2 3 2.8 6.4 2.5 10.3-1.6 1.2-3.200 1.900-4.800 2.300l-1-1.700c.5-.2 1-.4 1.400-.7l-.3-.2a9 9 0 0 1-7.800 0l-.3.2c.4.3.9.5 1.400.7l-1 1.700c-1.600-.4-3.200-1.100-4.800-2.300-.3-3.900.5-7.300 2.500-10.300Z"/><circle cx="9.300" cy="12" r="1.500" fill="#040308"/><circle cx="14.700" cy="12" r="1.500" fill="#040308"/></svg>
-            <span><b>Discord</b><small>Join the server</small></span>
-            <code>discord.com</code>
-          </a>
-        </li>
-        <li>
-          <a href="https://www.linkedin.com/company/cyber-security-cloud-computing-york-university/posts/" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="currentColor"/><path d="M7.500 10.200v6.300M7.500 7.400v.1M11.200 16.500v-6.300m0 2.800c0-1.700 1-2.900 2.600-2.900s2.700 1.100 2.700 3v3.200" fill="none" stroke="#040308" stroke-width="1.900" stroke-linecap="round"/></svg>
-            <span><b>LinkedIn</b><small>Posts and club updates</small></span>
-            <code>linkedin.com</code>
-          </a>
-        </li>
-        <li>
-          <a href="https://yuconnect.yorku.ca/csccy/home/" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m7.500 8 4.500 5 4.500-5M12 13v4.500"/></svg>
-            <span><b>YuConnect</b><small>Our official club page at York</small></span>
-            <code>yuconnect.yorku.ca</code>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </section>
+  if (!tag || reduce) return;
+  var plain = tag.textContent, busy = false;
+  tag.setAttribute('aria-label', plain);
+  tag.title = 'Click to decrypt again';
 
-  <section class="block join">
-    <div class="wrap">
-      <h2>Join</h2>
-      <p>Membership takes one form. Fill it in and we'll see you at the next session.</p>
-      <a class="btn" href="https://yuconnect.yorku.ca/csccy/home/">Open the registration form</a>
-    </div>
-  </section>
-</main>
+  function shift(ch, k) {
+    var c = ch.charCodeAt(0), base = c >= 97 && c <= 122 ? 97 : c >= 65 && c <= 90 ? 65 : 0;
+    return base ? String.fromCharCode((c - base + k) % 26 + base) : ch;
+  }
+  function frame(f) {
+    var out = '';
+    for (var i = 0; i < plain.length; i++) {
+      var k = Math.max(0, Math.min(13, Math.round(13 - (f - i * 0.6))));
+      out += shift(plain[i], k);
+    }
+    return out;
+  }
+  function run() {
+    if (busy) return;
+    busy = true;
+    var f = 0, end = 13 + plain.length * 0.6;
+    tag.textContent = frame(0);
+    (function tick() {
+      tag.textContent = frame(f);
+      f += 1;
+      if (f <= end) setTimeout(tick, 45);
+      else { tag.textContent = plain; busy = false; }
+    })();
+  }
+  tag.textContent = frame(0);
+  setTimeout(run, 600);
+  tag.addEventListener('click', run);
 
-<footer>
-  <div><span>© <span id="yr"></span> Cyber Security and Cloud Computing at York</span><span>York University</span></div>
-</footer>
-
-<script src="site.js"></script>
-</body>
-</html>
+})();
