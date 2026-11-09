@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact · Cyber Security and Cloud Computing at York</title>
+<meta name="description" content="Contact CSCCY at York University.">
+<meta name="theme-color" content="#040308">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23040308'/%3E%3Ctext x='50' y='70' font-size='54' text-anchor='middle' font-family='monospace' font-weight='bold' fill='%23a46cff'%3E%3E_%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;600&family=Major+Mono+Display&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<style>
+  /* Only form-specific styles; everything else comes from style.css */
+  .contact-form{max-width:600px;margin-top:36px}
+  .contact-form .field{margin-bottom:22px}
+  .contact-form label{
+    display:block;font:.78rem var(--disp);color:var(--violet);
+    margin-bottom:8px;letter-spacing:.03em;
+  }
+  .contact-form input,
+  .contact-form textarea{
+    width:100%;padding:13px 16px;
+    background:var(--panel);border:1px solid var(--edge);
+    border-radius:2px;color:var(--text);
+    font:400 1rem/1.55 var(--body);
+    transition:border-color .2s;
+  }
+  .contact-form input:focus,
+  .contact-form textarea:focus{
+    outline:none;border-color:var(--violet);
+  }
+  .contact-form textarea{min-height:160px;resize:vertical}
+  .contact-form .honey{display:none}
+  .contact-form .btn{
+    border:0;cursor:pointer;font:inherit;
+  }
+  .contact-form .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+  .form-status{
+    margin-top:16px;font:.9rem var(--body);
+    min-height:1.5em;
+  }
+  .form-status.ok{color:#7ddfa8}
+  .form-status.err{color:#ff8a8a}
+</style>
+</head>
+<body>
+
+<div class="ruler" aria-hidden="true"><span>0x0000</span></div>
+
+<header class="bar">
+  <a class="mark" href="../">CSCCY</a>
+  <nav aria-label="Main">
+    <a href="../" data-scroll-to="about">About</a>
+    <a href="../events/">Events</a>
+    <a href="../" data-scroll-to="links">Find us</a>
+    <a href="./" aria-current="page">Contact</a>
+  </nav>
+</header>
+
+<main>
+  <div class="wrap page-head">
+    <h1>Contact us</h1>
+    <p>Questions, ideas, or want to get involved? Drop us a message and we'll get back to you.</p>
+  </div>
+
+  <section class="block">
+    <div class="wrap">
+      <h2>Send a message</h2>
+
+      <form
+        class="contact-form"
+        id="contact-form"
+        action="https://formsubmit.co/ajax/compsecatyork@gmail.com"
+        method="POST"
+      >
+        <!-- Spam trap: real users won't fill this -->
+        <input type="text" name="_gotcha" class="honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <!-- Disable FormSubmit's captcha; we use the honeypot instead -->
+        <input type="hidden" name="_captcha" value="false">
+        <!-- Tell FormSubmit the real page URL so strict referer policies don't break it -->
+        <input type="hidden" name="_url" value="https://csccy.ca/contact/">
+
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" name="name" type="text" required autocomplete="name" placeholder="Your name">
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" required placeholder="What's on your mind?"></textarea>
+        </div>
+
+        <button class="btn" type="submit" id="submit-btn">Send message</button>
+        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div><span>© <span id="yr"></span> Cyber Security and Cloud Computing at York</span><span>York University</span></div>
+</footer>
+
+<script src="../site.js"></script>
+<script>
+(function () {
+  var form = document.getElementById('contact-form');
+  var btn = document.getElementById('submit-btn');
+  var status = document.getElementById('form-status');
+  if (!form || !btn || !status) return;
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    // Honeypot filled = bot; silently ignore
+    var honey = form.querySelector('[name="_gotcha"]');
+    if (honey && honey.value.trim() !== '') return;
+
+    status.textContent = 'Sending…';
+    status.className = 'form-status';
+    btn.disabled = true;
+
+    var data = {
+      name: form.name.value.trim(),
+      email: form.email.value.trim(),
+      message: form.message.value.trim()
+    };
+
+    fetch('https://formsubmit.co/ajax/compsecatyork@gmail.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (res) {
+      if (res.success) {
+        status.textContent = 'Message sent. We’ll get back to you soon.';
+        status.className = 'form-status ok';
+        form.reset();
+      } else {
+        status.textContent = res.message || 'Something went wrong. Try again or email us directly.';
+        status.className = 'form-status err';
+      }
+    })
+    .catch(function () {
+      status.textContent = 'Network error. Please try again, or email compsecatyork@gmail.com directly.';
+      status.className = 'form-status err';
+    })
+    .finally(function () {
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
